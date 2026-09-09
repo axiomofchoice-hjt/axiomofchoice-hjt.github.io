@@ -15,7 +15,7 @@ description: 本文将 std::unique 升级为真正的 O(n) 原地稳定去重，
 
 参考的论文是：
 
-1. [Stable Duplicate-Key Extraction with Optimal Time and Space Bound](https:/doi.org/10.1007/BF00289147)
+1. [Stable Duplicate-Key Extraction with Optimal Time and Space Bound](https://doi.org/10.1007/BF00289147)
 2. [Stable set and multiset operations in optimal time and space](https://doi.org/10.1145/308386.308458)
 
 ## 1. 问题定义
