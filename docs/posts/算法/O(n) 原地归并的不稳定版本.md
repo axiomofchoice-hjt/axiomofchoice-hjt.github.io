@@ -20,7 +20,7 @@ description: 一个线性时间、常数空间的原地归并算法（不稳定�
 
 [WikiSort](https://github.com/BonzaiThePenguin/WikiSort) 也值得一看，是稳定版本。
 
-另外 [Sorting stably, in-place, with O(n log n) comparisons and O(n) moves](https://doi.org/10.1007/978-3-540-31856-9_52) 这个排序比本文的结论更强，多了 $O(n)$ 次移动的限制，可能是理论上最完美的排序。但是过于复杂看不懂喵。
+另外 [Sorting Stably, in Place, with O(n log n) Comparisons and O(n) Moves](https://doi.org/10.1007/s00224-006-1311-1) 这个排序比本文的结论更强，多了 $O(n)$ 次移动的限制，可能是理论上最完美的排序。但是过于复杂看不懂喵。
 
 ## 1. 原地归并是什么
 
