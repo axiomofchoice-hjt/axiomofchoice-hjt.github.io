@@ -4,14 +4,14 @@ date: 2021-12-06 16:28:07
 permalink: /pages/62c303/
 categories: 
   - 杂谈
-description: 一个解密游戏，规则由玩家发掘，难度较高
+description: 一个解谜游戏，规则由玩家发掘，难度较高
 ---
 
 ## 1. 简介
 
 [游戏链接](https://axiomofchoice-hjt.github.io/puzzles/)
 
-一个解密游戏，规则由玩家发掘，难度较高。
+一个解谜游戏，规则由玩家发掘，难度较高。
 
 ## 2. 攻略 1-10
 
