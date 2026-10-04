@@ -19,7 +19,7 @@ export interface Post {
   author: string
   /** 文章摘要 */
   description: string
-  /** 字数（基于 markdown 源码统计，dev/build 一致） */
+  /** 字数（源码统计：汉字按字、西文按词，1 词折算 1 字；见 words.ts） */
   words: number
   /** 阅读时间（分钟，按 300 字/分钟估算） */
   readingTime: number
@@ -37,9 +37,9 @@ const stripHtml = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-// 不渲染整篇文章（render: false）：dev 首次加载不用等 141 篇文章全部渲染
-// （含 KaTeX/shiki 约 9s）。字数由 markdown 源码估算（见 words.ts），
-// dev 与 build 数字一致；excerpt 仍单独渲染用于摘要展示
+// 不渲染整篇文章（render: false）：dev 首次加载不用等全部文章渲染
+// （含 KaTeX/shiki 约 9s）。字数由 markdown 源码按“汉字计字、西文计词”
+// 统计（见 words.ts），dev 与 build 数字一致；excerpt 仍单独渲染用于摘要展示
 export default createContentLoader('posts/**/*.md', {
   includeSrc: true,
   excerpt: true,
