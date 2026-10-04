@@ -11,7 +11,7 @@ description: "位向量 rank/select 实现笔记：从四篇论文到 O(n) bit �
 
 来一期数据结构，在位向量 (Bit Vector) 上支持 rank select 操作。这一期我费了很多时间研究 4 篇论文，可是实现起来太复杂，最后还是选择了更弱的算法。
 
-虽然只要把论文交给 AI 可以快速实现，但还是算了，古法编程是我消遣娱乐的重要一环。
+虽然只要把论文交给 AI 就可以快速实现，但还是算了，古法编程是我消遣娱乐的重要一环。
 
 本期参考的论文是：
 
@@ -26,9 +26,9 @@ description: "位向量 rank/select 实现笔记：从四篇论文到 O(n) bit �
 
 位向量，是每个位置存储 0 或 1 的数组，在 C++ 里可以用 `std::bitset` 来存储。
 
-rank，就是给定一个整数 i，求位向量前 i 位有多少个 1。
+rank，就是给定一个整数 $i$，求位向量前 $i$ 位有多少个 1。
 
-select，就是给定一个整数 k，求位向量第 k 个 1 的位置（假设“第 X 个”是从 0 开始计数）。
+select，就是给定一个整数 $k$，求位向量第 $k$ 个 1 的位置（假设“第 X 个”是从 0 开始计数）。
 
 我们要实现一个位向量，支持 $O(1)$ 的 rank 和 select，并且额外空间复杂度 $O(n)$ bit。
 
@@ -38,7 +38,7 @@ select，就是给定一个整数 k，求位向量第 k 个 1 的位置（假设
 
 Elias-Fano 编码（下文简称 EF 编码）和位向量的关系非常紧密。
 
-Elias-Fano 编码可以表示 m 个严格递增的序列 xi，值域是 0 到 U - 1。
+Elias-Fano 编码可以表示 $m$ 个严格递增的序列 $x_i$，值域是 $0$ 到 $U - 1$。
 
 首先把整数拆成低位（$l=\lfloor \log \frac U m \rfloor$ 比特）和高位（剩余比特），低位原样存储，高位用一种长度为 $\lceil\frac{U}{2^l}\rceil+m$ 的位向量存储。令高位 $h_i=\lfloor \frac{x_i}{2^l}\rfloor$，$h_i+i$ 位置都是 1，其余都是 0。
 
@@ -54,7 +54,7 @@ rank 操作非常简单，只要略微分块即可。
 
 同时预处理 popcount 表，把所有 $\sqrt n$ 以内的自然数 popcount 结果处理成表。popcount 运算就是求整数的二进制表示里有多少个 1。表的每个位置 $\log\log n$ bit，表大小 $\sqrt n$，因此需要 $O(\sqrt n\log\log n)$ bit。易得小于 $O(n)$ bit。
 
-查询时，加载查询位置所在块块首元素的 rank。然后从块首到查询位置（不超过 $\frac {\log n}{2}$ bit）加载为一个整数，查 popcount 表即可。
+查询时，加载查询位置所在块的块首元素的 rank。然后从块首到查询位置（不超过 $\frac {\log n}{2}$ bit）加载为一个整数，查 popcount 表即可。
 
 ## 4. select
 
@@ -70,15 +70,15 @@ select 就很难了，我花了大量时间研究这玩意。
 
 ***
 
-对于第二个数组，如果段的范围 R 比较小，我们用 EF 编码进一步压缩。
+对于第二个数组，如果段的范围 $R$ 比较小，我们用 EF 编码进一步压缩。
 
-具体来说，如果段的范围 R 大于等于 $\log^2n$（稀疏段），就完整保存每个 1 的索引。因为索引需要 $\log n$ bit，稀疏段最多 $\frac{n}{\log^2n}$ 个，每段 $\log n$ 个索引，乘起来正好是 n bit。
+具体来说，如果段的范围 $R$ 大于等于 $\log^2n$（稀疏段），就完整保存每个 1 的索引。因为索引需要 $\log n$ bit，稀疏段最多 $\frac{n}{\log^2n}$ 个，每段 $\log n$ 个索引，乘起来正好是 n bit。
 
-如果段的范围 R 小于 $\log^2n$，就使用 $U=R,m=\log n$ 的 EF 编码。假设每段的范围都是 R，总空间是 $\frac n R O(m+m\log\frac{U}{m})$，代入得 $O(\frac{n\log n}{R}+\frac{n\log n}{R}\log \frac{R}{\log n})$。我们有 $R\ge \log n$，所以 $O(\frac{n\log n}{R}) \le O(n)$。令 $x=\frac{R}{\log n}$，显然 $x>\log x$，也就是 $\frac 1 x \log x<1$，即 $O(\frac{n\log n}{R}\log \frac{R}{\log n})\le O(n)$。
+如果段的范围 $R$ 小于 $\log^2n$，就使用 $U=R,m=\log n$ 的 EF 编码。假设每段的范围都是 $R$，总空间是 $\frac n R O(m+m\log\frac{U}{m})$，代入得 $O(\frac{n\log n}{R}+\frac{n\log n}{R}\log \frac{R}{\log n})$。我们有 $R\ge \log n$，所以 $O(\frac{n\log n}{R}) \le O(n)$。令 $x=\frac{R}{\log n}$，显然 $x>\log x$，也就是 $\frac 1 x \log x<1$，即 $O(\frac{n\log n}{R}\log \frac{R}{\log n})\le O(n)$。
 
 剩下的问题就是，EF 编码需要查询 select，而我们正在用 EF 编码解决 select 问题，这不是无限递归了吗。实则不然，这里的长度很短，可以用查表完成。
 
-构建一个 $\sqrt n$ 乘以 $\log n$ 大小的二维表，可以查询 $\sqrt n$（$\frac{\log n}{2}$ bit）以内的整数，二进制表示的第 k 个 1 的位置。表大小是 $\sqrt n \log n$，表的元素是 $\log \log n$ bit，因此需要空间是 $O(\sqrt n\log n\log \log n)$ bit。易得小于 $O(n)$ bit。
+构建一个 $\sqrt n$ 行、每行 $\frac{\log n}{2}$ 个元素的二维表，可以查询 $\sqrt n$（$\frac{\log n}{2}$ bit）以内的整数，二进制表示的第 $k$ 个 1 的位置。表大小是 $\sqrt n \log n$，表的元素是 $\log \log n$ bit，因此需要空间是 $O(\sqrt n\log n\log \log n)$ bit。易得小于 $O(n)$ bit。
 
 段的 EF 编码高位位向量是 $O(\log n)$ bit，一次 $\frac{\log n}{2}$ bit 查表不够，需要分多次查表。可以保证是常数次查表，因此查询复杂度还是 $O(1)$。
 
