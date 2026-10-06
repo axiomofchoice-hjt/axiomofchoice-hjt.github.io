@@ -72,9 +72,7 @@ select 就很难了，我花了大量时间研究这玩意。
 
 对于第二个数组，如果段的范围 $R$ 比较小，我们用 EF 编码进一步压缩。
 
-具体来说，如果段的范围 $R$ 大于等于 $\log^2n$（稀疏段），就完整保存每个 1 的索引。因为索引需要 $\log n$ bit，稀疏段最多 $\frac{n}{\log^2n}$ 个，每段 $\log n$ 个索引，乘起来正好是 n bit。
-
-如果段的范围 $R$ 小于 $\log^2n$，就使用 $U=R,m=\log n$ 的 EF 编码。假设每段的范围都是 $R$，总空间是 $\frac n R O(m+m\log\frac{U}{m})$，代入得 $O(\frac{n\log n}{R}+\frac{n\log n}{R}\log \frac{R}{\log n})$。我们有 $R\ge \log n$，所以 $O(\frac{n\log n}{R}) \le O(n)$。令 $x=\frac{R}{\log n}$，显然 $x>\log x$，也就是 $\frac 1 x \log x<1$，即 $O(\frac{n\log n}{R}\log \frac{R}{\log n})\le O(n)$。
+具体来说，使用 $U=R,m=\log n$ 的 EF 编码。假设每段的范围都是 $R$，总空间是 $\frac n R O(m+m\log\frac{U}{m})$，代入得 $O(\frac{n\log n}{R}+\frac{n\log n}{R}\log \frac{R}{\log n})$。我们有 $R\ge \log n$，所以 $O(\frac{n\log n}{R}) \le O(n)$。令 $x=\frac{R}{\log n}$，显然 $x>\log x$，也就是 $\frac 1 x \log x<1$，即 $O(\frac{n\log n}{R}\log \frac{R}{\log n})\le O(n)$。
 
 剩下的问题就是，EF 编码需要查询 select，而我们正在用 EF 编码解决 select 问题，这不是无限递归了吗。实则不然，这里的长度很短，可以用查表完成。
 
@@ -164,7 +162,7 @@ return static_cast<int64_t>(
 
 ### 5.4. select
 
-select 需要存储每一段的信息，用 compact 存储段首位置、是否稀疏、稀疏段每个 1 的相对位置、稠密段的 EF 编码。然后 `compact_offset` 存储 compact 每一段的开始位置，方便查找。
+用 compact 存储每一段段首位置、EF 编码。然后 `compact_offset` 存储 compact 每一段的开始位置，方便查找。
 
 ```cpp
 PackedVector compact_offsets_;
@@ -185,26 +183,14 @@ for (int64_t i = 0; i < count; i++) {
     if ((i + 1) % n_ones_per_segment == 0 || i + 1 == count) {
         int64_t span =
             static_cast<int64_t>(segment.get(segment.size() - 1) - segment.get(0) + 1);
-        if (span >= sparse_threshold) {
-            // 这里是稀疏段
-        } else {
-            // 这里是稠密段
-        }
+        // 记录 EF 编码
         segment = PackedVector::create(n_index_bits, n_word_bits);
     }
     index++;
 }
 ```
 
-稀疏段预处理，记录每个 1 的相对位置：
-
-```cpp
-for (int64_t j = 0; j < segment.size(); j++) {
-    compact.push_back_range(segment.get(j) - segment.get(0), n_index_bits);
-}
-```
-
-稠密段预处理，把每个 1 的相对位置拆成 high 和 low 两个部分，高位编码位向量，低位原样存储。
+EF 编码预处理，把每个 1 的相对位置拆成 high 和 low 两个部分，高位编码位向量，低位原样存储。
 
 ```cpp
 int64_t n_span_bits = ceil_log2(span);
