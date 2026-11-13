@@ -59,7 +59,7 @@ description: 文章摘要
 
 - 数学公式：`$...$` / `$$...$$`（MathJax，内置支持）
 - 图片：放在 `docs/posts/<分类>/assets/` 下，相对路径引用 `![](./assets/xxx.png)`
-- 置顶：`sticky: 1`；草稿：`draft: true`
+- 置顶：`sticky: 1`（仅首页置顶；分类页 / 归档页始终按发布日期倒序）；草稿：`draft: true`
 
 ## 🎨 定制主题
 

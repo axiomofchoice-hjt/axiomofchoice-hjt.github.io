@@ -37,6 +37,30 @@ const stripHtml = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
+/**
+ * 解析 frontmatter 里的 date。
+ *
+ * 未加引号的 YAML 时间戳会被 js-yaml 当成 UTC 解析
+ * （`date: 2023-12-17 23:15:51` → 2023-12-17T23:15:51Z），
+ * 直接读取本地字段会让北京时间晚 8 小时（23:15 变成次日 07:15）。
+ * 这里把 UTC 分量当作者书写的“墙钟时间”重建，展示与分组才和原文一致。
+ */
+function parsePostDate(value: unknown): Date {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Date(
+      value.getUTCFullYear(),
+      value.getUTCMonth(),
+      value.getUTCDate(),
+      value.getUTCHours(),
+      value.getUTCMinutes(),
+      value.getUTCSeconds(),
+      value.getUTCMilliseconds(),
+    )
+  }
+  const date = new Date((value as string | number) || 0)
+  return Number.isNaN(date.getTime()) ? new Date(0) : date
+}
+
 // 不渲染整篇文章（render: false）：dev 首次加载不用等全部文章渲染
 // （含 KaTeX/shiki 约 9s）。字数由 markdown 源码按“汉字计字、西文计词”
 // 统计（见 words.ts），dev 与 build 数字一致；excerpt 仍单独渲染用于摘要展示
@@ -48,7 +72,7 @@ export default createContentLoader('posts/**/*.md', {
     return raw
       .filter((p) => !p.frontmatter.draft)
       .map((p) => {
-        const date = new Date(p.frontmatter.date || 0)
+        const date = parsePostDate(p.frontmatter.date)
         const words = countWordsFromSource(p.src || '')
         const y = date.getFullYear()
         const m = String(date.getMonth() + 1).padStart(2, '0')

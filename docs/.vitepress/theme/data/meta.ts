@@ -9,6 +9,17 @@ export function formatDateZh(date: Date | string): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 }
 
+/**
+ * 文章时间戳（毫秒）。
+ * 构建时 date 是 Date，序列化到前端后变成 ISO 字符串；
+ * 直接 `+date` 会得到 NaN，导致排序比较器静默失效。
+ */
+function postTimestamp(post: Post): number {
+  const date: Date | string = post.date
+  const time = typeof date === 'string' ? new Date(date).getTime() : date.getTime()
+  return Number.isNaN(time) ? 0 : time
+}
+
 export interface CategoryInfo {
   name: string
   count: number
@@ -61,7 +72,8 @@ export function groupByYearMonth(
         .sort((a, b) => +b[0] - +a[0])
         .map(([month, monthPosts]) => ({
           month,
-          posts: monthPosts.sort((a, b) => +b.date - +a.date),
+          // 前端拿到的 date 已序列化为字符串，必须显式转时间戳再比较
+          posts: [...monthPosts].sort((a, b) => postTimestamp(b) - postTimestamp(a)),
         })),
     }))
 }
