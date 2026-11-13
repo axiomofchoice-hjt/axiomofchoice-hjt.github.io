@@ -187,12 +187,10 @@ function buildSidebar(): DefaultTheme.Sidebar {
 }
 
 function buildNav(): DefaultTheme.NavItem[] {
-  const categoryItems: DefaultTheme.NavItemWithLink[] = listCategories()
-    .sort(compareCategory)
-    .map((c) => ({ text: c, link: `/categories.html?c=${encodeURIComponent(c)}` }))
   return [
     { text: '首页', link: '/' },
-    { text: '分类', items: categoryItems },
+    // 分类页是聚合入口：点击进入后默认展示第一个分类（分类顺序见 CATEGORY_ORDER）
+    { text: '分类', link: '/categories.html' },
     { text: '归档', link: '/archives' },
     { text: '关于', link: '/pages/1919bb/' },
     { text: 'Puzzles', link: 'https://axiomofchoice-hjt.github.io/puzzles/' },
